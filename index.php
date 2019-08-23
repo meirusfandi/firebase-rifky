@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" href="//www.gstatic.com/mobilesdk/160503_mobilesdk/logo/favicon.ico">
-        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+        <link rel="stylesheet" href="style.css">
  
         <style type="text/css">
             body{
@@ -79,13 +79,13 @@
         $include_image = isset($_GET['include_image']) ? TRUE : FALSE;
  
  
+        // upload image
+        
+        $image = "";
+
         $push->setTitle($title);
         $push->setMessage($message);
-        if ($include_image) {
-            $push->setImage('https://api.androidhive.info/images/minion.jpg');
-        } else {
-            $push->setImage('');
-        }
+        $push->setImage($image);
         $push->setIsBackground(FALSE);
         $push->setPayload($payload);
  
@@ -93,15 +93,16 @@
         $json = '';
         $response = '';
  
-        if ($push_type == 'topic') {
-            $json = $push->getPush();
-            $response = $firebase->sendToTopic('global', $json);
-        } else if ($push_type == 'individual') {
+        // if ($push_type == 'topic') {
+        //     $json = $push->getPush();
+        //     $response = $firebase->sendToTopic('global', $json);
+        // } else if ($push_type == 'individual') {
             $json = $push->getPush();
             $regId = isset($_GET['regId']) ? $_GET['regId'] : '';
             $response = $firebase->send($regId, $json);
-        }
+        // }
         ?>
+
         <div class="container">
             <div class="fl_window">
                 <div><img src="https://api.androidhive.info/images/firebase_logo.png" width="200" alt="Firebase"/></div>
@@ -129,6 +130,11 @@
                     <label for="redId">Firebase Reg Id</label>
                     <input type="text" id="redId" name="regId" class="pure-input-1-2" placeholder="Enter firebase registration id">
  
+                    <label for="image">Upload Image</label>
+                    <input type="file" name="gambar" id="gambar">
+
+                    <img src="#" id="notif" width="400" height="400" alt="Preview Image">
+
                     <label for="title">Title</label>
                     <input type="text" id="title" name="title" class="pure-input-1-2" placeholder="Enter title">
  
@@ -144,7 +150,7 @@
             </form>
             <br/><br/><br/><br/>
  
-            <form class="pure-form pure-form-stacked" method="get">
+            <!-- <form class="pure-form pure-form-stacked" method="get">
                 <fieldset>
                     <legend>Send to Topic `global`</legend>
  
@@ -160,7 +166,7 @@
                     <input type="hidden" name="push_type" value="topic"/>
                     <button type="submit" class="pure-button pure-button-primary btn_send">Send to Topic</button>
                 </fieldset>
-            </form>
+            </form> -->
         </div>
     </body>
 </html>
