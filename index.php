@@ -48,59 +48,69 @@
             }
  
         </style>
+
+        <script type='text/javascript'>
+        function preview_image(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('output_image');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+        </script>
     </head>
     <body>
         <?php
-        // Enabling error reporting
-        error_reporting(-1);
-        ini_set('display_errors', 'On');
- 
-        require_once __DIR__ . '/firebase.php';
-        require_once __DIR__ . '/push.php';
- 
-        $firebase = new Firebase();
-        $push = new Push();
- 
-        // optional payload
-        $payload = array();
-        $payload['team'] = 'India';
-        $payload['score'] = '5.6';
- 
-        // notification title
-        $title = isset($_GET['title']) ? $_GET['title'] : '';
-         
-        // notification message
-        $message = isset($_GET['message']) ? $_GET['message'] : '';
-         
-        // push type - single user / topic
-        $push_type = isset($_GET['push_type']) ? $_GET['push_type'] : '';
-         
-        // whether to include to image or not
-        $include_image = isset($_GET['include_image']) ? TRUE : FALSE;
- 
- 
-        // upload image
-        
-        $image = "";
+            // Enabling error reporting
+            error_reporting(-1);
+            ini_set('display_errors', 'On');
+    
+            require_once __DIR__ . '/firebase.php';
+            require_once __DIR__ . '/push.php';
+    
+            $firebase = new Firebase();
+            $push = new Push();
+    
+            // optional payload
+            $payload = array();
+            $payload['team'] = 'India';
+            $payload['score'] = '5.6';
+    
+            // notification title
+            $title = isset($_GET['title']) ? $_GET['title'] : '';
+            
+            // notification message
+            $message = isset($_GET['message']) ? $_GET['message'] : '';
+            
+            // push type - single user / topic
+            $push_type = isset($_GET['push_type']) ? $_GET['push_type'] : '';
+            
+            // whether to include to image or not
+            $include_image = isset($_GET['include_image']) ? TRUE : FALSE;
+    
+    
+            // upload image
+            if (isset($_POST['upload'])) {
 
-        $push->setTitle($title);
-        $push->setMessage($message);
-        $push->setImage($image);
-        $push->setIsBackground(FALSE);
-        $push->setPayload($payload);
- 
- 
-        $json = '';
-        $response = '';
- 
-        // if ($push_type == 'topic') {
-        //     $json = $push->getPush();
-        //     $response = $firebase->sendToTopic('global', $json);
-        // } else if ($push_type == 'individual') {
+                preview_image(event);
+            }
+
+            $image = "";
+
+            $push->setTitle($title);
+            $push->setMessage($message);
+            $push->setImage($image);
+            $push->setIsBackground(FALSE);
+            $push->setPayload($payload);
+    
+    
+            $json = '';
+            $response = '';
             $json = $push->getPush();
             $regId = isset($_GET['regId']) ? $_GET['regId'] : '';
             $response = $firebase->send($regId, $json);
-        // }
+    
         ?>
 
         <div class="container">
@@ -123,6 +133,18 @@
  
             </div>
  
+            <form class="pure-form pure-form-stacked" method="POST" action="index.php" enctype="multipart/form-data">
+                <fieldset>
+                    <legend>Upload Image</legend>
+ 
+                    <label for="title1">Upload Image</label>
+                    <input type="file" id="upload" name="upload">
+                    <button type="submit" class="pure-button pure-button-primary btn_send">Upload</button>
+                </fieldset>
+            </form>
+            
+            <br/><br/><br/><br/>
+
             <form class="pure-form pure-form-stacked" method="get">
                 <fieldset>
                     <legend>Send to Single Device</legend>
@@ -133,7 +155,7 @@
                     <label for="image">Upload Image</label>
                     <input type="file" name="gambar" id="gambar">
 
-                    <img src="#" id="notif" width="400" height="400" alt="Preview Image">
+                    <!-- <img src="#" id="notif" width="400" height="400" alt="Preview Image"> -->
 
                     <label for="title">Title</label>
                     <input type="text" id="title" name="title" class="pure-input-1-2" placeholder="Enter title">
@@ -148,25 +170,6 @@
                     <button type="submit" class="pure-button pure-button-primary btn_send">Send</button>
                 </fieldset>
             </form>
-            <br/><br/><br/><br/>
- 
-            <!-- <form class="pure-form pure-form-stacked" method="get">
-                <fieldset>
-                    <legend>Send to Topic `global`</legend>
- 
-                    <label for="title1">Title</label>
-                    <input type="text" id="title1" name="title" class="pure-input-1-2" placeholder="Enter title">
- 
-                    <label for="message1">Message</label>
-                    <textarea class="pure-input-1-2" name="message" id="message1" rows="5" placeholder="Notification message!"></textarea>
- 
-                    <label for="include_image1" class="pure-checkbox">
-                        <input id="include_image1" name="include_image" type="checkbox"> Include image
-                    </label>
-                    <input type="hidden" name="push_type" value="topic"/>
-                    <button type="submit" class="pure-button pure-button-primary btn_send">Send to Topic</button>
-                </fieldset>
-            </form> -->
         </div>
     </body>
 </html>
