@@ -141,7 +141,7 @@
                             }
                         }
                     } else {
-                        $images = "";
+                        $images = "https://api.androidhive.info/images/minion.jpg";
                     }
                 }
 
