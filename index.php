@@ -74,42 +74,92 @@
     
             // optional payload
             $payload = array();
-            $payload['team'] = 'India';
-            $payload['score'] = '5.6';
+            $payload['team'] = 'Indonesia';
+            $payload['score'] = '1.0';
     
-            // notification title
-            $title = isset($_GET['title']) ? $_GET['title'] : '';
-            
-            // notification message
-            $message = isset($_GET['message']) ? $_GET['message'] : '';
-            
-            // push type - single user / topic
-            $push_type = isset($_GET['push_type']) ? $_GET['push_type'] : '';
-            
-            // whether to include to image or not
-            $include_image = isset($_GET['include_image']) ? TRUE : FALSE;
-    
-    
-            // upload image
-            if (isset($_POST['upload'])) {
+            if (isset($_POST['title']) == 1 && isset($_POST['message']) == 1 && isset($_POST['regId']) == 1) {
+                // notification title
+                $title = isset($_POST['title']) ? $_POST['title'] : '';
+                
+                // notification message
+                $message = isset($_POST['message']) ? $_POST['message'] : '';
+                
+                // push type - single user / topic
+                $push_type = isset($_POST['push_type']) ? $_POST['push_type'] : '';
+                
+                // whether to include to image or not
+                $include_image = isset($_POST['include_image']) ? TRUE : FALSE;
+        
+                $image = "";
 
-                preview_image(event);
+                if ($include_image == TRUE) {
+                    if (isset($_POST['upload']) == 1) {
+                        // upload images first 
+
+                        $target_dir = "images/";
+                        $target_file = $target_dir.basename($_FILES["gambar"]["name"]);
+                        $uploadOK = 1;
+                        $imagefiletype = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+                        if (isset($_POST["submit"]) == 1) {
+                            $check = getimagesize($_FILES["gambar"]["tmp_name"]);
+                            if ($check !== false) {
+                                echo "Images uploaded ".$check["mime"].".";
+                                $uploadOK = 1;
+                            } else {
+                                echo "Failed to upload images";
+                                $uploadOK = 0;
+                            }
+                        }
+
+                        // Check if file already exists
+                        if (file_exists($target_file)) {
+                            echo "Sorry, file already exists.";
+                            $uploadOk = 0;
+                        }
+                        // Check file size
+                        if ($_FILES["fileToUpload"]["size"] > 500000) {
+                            echo "Sorry, your file is too large.";
+                            $uploadOk = 0;
+                        }
+                        // Allow certain file formats
+                        if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+                        && $imageFileType != "gif" ) {
+                            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+                            $uploadOk = 0;
+                        }
+
+                        // Check if $uploadOk is set to 0 by an error
+                        if ($uploadOk == 0) {
+                            echo "Sorry, your file was not uploaded.";
+                        // if everything is ok, try to upload file
+                        } else {
+                            if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+                                echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
+                            } else {
+                                echo "Sorry, there was an error uploading your file.";
+                            }
+                        }
+                    } else {
+                        $images = "";
+                    }
+                }
+
+                $push->setTitle($title);
+                $push->setMessage($message);
+                $push->setImage($image);
+                $push->setIsBackground(FALSE);
+                $push->setPayload($payload);
+        
+                $json = '';
+                $response = '';
+                $json = $push->getPush();
+                $regId = isset($_POST['regId']) ? $_POST['regId'] : '';
+                $response = $firebase->send($regId, $json);
+            } else {
+                $json = '';
+                $response = '';
             }
-
-            $image = "";
-
-            $push->setTitle($title);
-            $push->setMessage($message);
-            $push->setImage($image);
-            $push->setIsBackground(FALSE);
-            $push->setPayload($payload);
-    
-    
-            $json = '';
-            $response = '';
-            $json = $push->getPush();
-            $regId = isset($_GET['regId']) ? $_GET['regId'] : '';
-            $response = $firebase->send($regId, $json);
     
         ?>
 
@@ -132,30 +182,14 @@
                 <?php } ?>
  
             </div>
- 
-            <form class="pure-form pure-form-stacked" method="POST" action="index.php" enctype="multipart/form-data">
-                <fieldset>
-                    <legend>Upload Image</legend>
- 
-                    <label for="title1">Upload Image</label>
-                    <input type="file" id="upload" name="upload">
-                    <button type="submit" class="pure-button pure-button-primary btn_send">Upload</button>
-                </fieldset>
-            </form>
-            
-            <br/><br/><br/><br/>
 
-            <form class="pure-form pure-form-stacked" method="get">
+            <form class="pure-form pure-form-stacked" method="post" enctype="multipart/form-data">
                 <fieldset>
-                    <legend>Send to Single Device</legend>
- 
                     <label for="redId">Firebase Reg Id</label>
                     <input type="text" id="redId" name="regId" class="pure-input-1-2" placeholder="Enter firebase registration id">
  
                     <label for="image">Upload Image</label>
                     <input type="file" name="gambar" id="gambar">
-
-                    <!-- <img src="#" id="notif" width="400" height="400" alt="Preview Image"> -->
 
                     <label for="title">Title</label>
                     <input type="text" id="title" name="title" class="pure-input-1-2" placeholder="Enter title">
@@ -167,7 +201,7 @@
                         <input name="include_image" id="include_image" type="checkbox"> Include image
                     </label>
                     <input type="hidden" name="push_type" value="individual"/>
-                    <button type="submit" class="pure-button pure-button-primary btn_send">Send</button>
+                    <button type="submit" name="submit" class="pure-button pure-button-primary btn_send">Send</button>
                 </fieldset>
             </form>
         </div>
