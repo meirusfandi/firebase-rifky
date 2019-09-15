@@ -99,7 +99,8 @@
                         if ($filename != "") {
                             // upload images first 
                             $target_dir = "images/";
-                            $target_file = $target_dir.date("YmdHis").basename($_FILES["gambar"]["name"]);
+                            $name = date("YmdHis").basename($_FILES["gambar"]["name"]);
+                            $target_file = $target_dir.$name;
                             $uploadOK = 1;
                             $imagefiletype = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
@@ -122,7 +123,7 @@
                             // if everything is ok, try to upload file
                             } else {
                                 if (move_uploaded_file($_FILES["gambar"]["tmp_name"], $target_file)) {
-                                    $image = $_FILES["gambar"]["name"];
+                                    $image = "http://rifky.meirusfandi.com/images/".$name;
                                 } else {
                                     echo "Sorry, there was an error uploading your file.";
                                 }
@@ -131,8 +132,6 @@
                             $image = "https://api.androidhive.info/images/minion.jpg";
                         }
                     }
-                    
-                    $image = "http://rifky.meirusfandi.com/".$image;
     
                     $push->setTitle($title);
                     $push->setMessage($message);
