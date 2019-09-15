@@ -99,17 +99,10 @@
                         if ($filename != "") {
                             // upload images first 
                             $target_dir = "images/";
-                            $target_file = $target_dir.basename($_FILES["gambar"]["name"]);
+                            $target_file = $target_dir.date("YmdHis").basename($_FILES["gambar"]["name"]);
                             $uploadOK = 1;
                             $imagefiletype = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
-                            // Check if file already exists
-                            // if (file_exists($target_file)) {
-                            //     echo "file allready exists";
-                            //     $uploadOK = 0;
-                            // }
-    
-                            // echo "gambar gak ada di direktori";
                             // Check file size
                             if ($_FILES["gambar"]["size"] > 1024000) {
                                 echo "images too large";
@@ -138,6 +131,8 @@
                             $image = "https://api.androidhive.info/images/minion.jpg";
                         }
                     }
+                    
+                    $image = "http://rifky.meirusfandi.com/".$image;
     
                     $push->setTitle($title);
                     $push->setMessage($message);
