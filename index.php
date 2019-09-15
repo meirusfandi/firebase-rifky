@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" href="//www.gstatic.com/mobilesdk/160503_mobilesdk/logo/favicon.ico">
-        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+        <link rel="stylesheet" href="style.css">
  
         <style type="text/css">
             body{
@@ -48,60 +48,118 @@
             }
  
         </style>
+
+        <script type='text/javascript'>
+        function preview_image(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('output_image');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+        </script>
     </head>
     <body>
         <?php
-        // Enabling error reporting
-        error_reporting(-1);
-        ini_set('display_errors', 'On');
- 
-        require_once __DIR__ . '/firebase.php';
-        require_once __DIR__ . '/push.php';
- 
-        $firebase = new Firebase();
-        $push = new Push();
- 
-        // optional payload
-        $payload = array();
-        $payload['team'] = 'India';
-        $payload['score'] = '5.6';
- 
-        // notification title
-        $title = isset($_GET['title']) ? $_GET['title'] : '';
-         
-        // notification message
-        $message = isset($_GET['message']) ? $_GET['message'] : '';
-         
-        // push type - single user / topic
-        $push_type = isset($_GET['push_type']) ? $_GET['push_type'] : '';
-         
-        // whether to include to image or not
-        $include_image = isset($_GET['include_image']) ? TRUE : FALSE;
- 
- 
-        $push->setTitle($title);
-        $push->setMessage($message);
-        if ($include_image) {
-            $push->setImage('https://api.androidhive.info/images/minion.jpg');
-        } else {
-            $push->setImage('');
-        }
-        $push->setIsBackground(FALSE);
-        $push->setPayload($payload);
- 
- 
-        $json = '';
-        $response = '';
- 
-        if ($push_type == 'topic') {
-            $json = $push->getPush();
-            $response = $firebase->sendToTopic('global', $json);
-        } else if ($push_type == 'individual') {
-            $json = $push->getPush();
-            $regId = isset($_GET['regId']) ? $_GET['regId'] : '';
-            $response = $firebase->send($regId, $json);
-        }
+            // Enabling error reporting
+            error_reporting(-1);
+            ini_set('display_errors', 'On');
+    
+            require_once __DIR__ . '/firebase.php';
+            require_once __DIR__ . '/push.php';
+    
+            $firebase = new Firebase();
+            $push = new Push();
+    
+            // optional payload
+            $payload = array();
+            $payload['team'] = 'Indonesia';
+            $payload['score'] = '1.0';
+    
+            if (isset($_POST['submit'])) {
+
+                if (isset($_POST['title']) == 1 && isset($_POST['message']) == 1 && isset($_POST['regId']) == 1) {
+                    // notification title
+                    $title = isset($_POST['title']) ? $_POST['title'] : '';
+                    
+                    // notification message
+                    $message = isset($_POST['message']) ? $_POST['message'] : '';
+                    
+                    // push type - single user / topic
+                    $push_type = isset($_POST['push_type']) ? $_POST['push_type'] : '';
+                    
+                    // whether to include to image or not
+                    $include_image = isset($_POST['include_image']) ? TRUE : FALSE;
+            
+                    $image = '';    
+                    if ($include_image) {
+                        
+                        $filename = $_FILES["gambar"]["name"];
+                        if ($filename != "") {
+                            // upload images first 
+                            $target_dir = "images/";
+                            $target_file = $target_dir.basename($_FILES["gambar"]["name"]);
+                            $uploadOK = 1;
+                            $imagefiletype = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+                            // Check if file already exists
+                            // if (file_exists($target_file)) {
+                            //     echo "file allready exists";
+                            //     $uploadOK = 0;
+                            // }
+    
+                            // echo "gambar gak ada di direktori";
+                            // Check file size
+                            if ($_FILES["gambar"]["size"] > 1024000) {
+                                echo "images too large";
+                                $uploadOK = 0;
+                            }
+    
+                            // echo "ukuran gambar cocok";
+                            // Allow certain file formats
+                            if($imagefiletype != "jpg" && $imagefiletype != "png" && $imagefiletype != "jpeg" && $imagefiletype != "gif" ) {
+                                echo "images type not support";
+                                $uploadOK = 0;
+                            }
+                            // echo "format gambar sesuai";
+                            // Check if $uploadOk is set to 0 by an error
+                            if ($uploadOK == 0) {
+                                echo "Sorry, your file was not uploaded.";
+                            // if everything is ok, try to upload file
+                            } else {
+                                if (move_uploaded_file($_FILES["gambar"]["tmp_name"], $target_file)) {
+                                    $image = $_FILES["gambar"]["name"];
+                                } else {
+                                    echo "Sorry, there was an error uploading your file.";
+                                }
+                            }
+                        } else {
+                            $image = "https://api.androidhive.info/images/minion.jpg";
+                        }
+                    }
+    
+                    $push->setTitle($title);
+                    $push->setMessage($message);
+                    $push->setImage($image);
+                    $push->setIsBackground(FALSE);
+                    $push->setPayload($payload);
+            
+                    $json = '';
+                    $response = '';
+                    $json = $push->getPush();
+                    $regId = isset($_POST['regId']) ? $_POST['regId'] : '';
+                    $response = $firebase->send($regId, $json);
+                } else {
+                    $json = '';
+                    $response = '';
+                }
+            } else {
+                $json = '';
+                $response = '';
+            }
         ?>
+
         <div class="container">
             <div class="fl_window">
                 <div><img src="https://api.androidhive.info/images/firebase_logo.png" width="200" alt="Firebase"/></div>
@@ -121,14 +179,15 @@
                 <?php } ?>
  
             </div>
- 
-            <form class="pure-form pure-form-stacked" method="get">
+
+            <form class="pure-form pure-form-stacked" method="post" enctype="multipart/form-data">
                 <fieldset>
-                    <legend>Send to Single Device</legend>
- 
                     <label for="redId">Firebase Reg Id</label>
                     <input type="text" id="redId" name="regId" class="pure-input-1-2" placeholder="Enter firebase registration id">
  
+                    <label for="image">Upload Image</label>
+                    <input type="file" name="gambar" id="gambar">
+
                     <label for="title">Title</label>
                     <input type="text" id="title" name="title" class="pure-input-1-2" placeholder="Enter title">
  
@@ -139,26 +198,7 @@
                         <input name="include_image" id="include_image" type="checkbox"> Include image
                     </label>
                     <input type="hidden" name="push_type" value="individual"/>
-                    <button type="submit" class="pure-button pure-button-primary btn_send">Send</button>
-                </fieldset>
-            </form>
-            <br/><br/><br/><br/>
- 
-            <form class="pure-form pure-form-stacked" method="get">
-                <fieldset>
-                    <legend>Send to Topic `global`</legend>
- 
-                    <label for="title1">Title</label>
-                    <input type="text" id="title1" name="title" class="pure-input-1-2" placeholder="Enter title">
- 
-                    <label for="message1">Message</label>
-                    <textarea class="pure-input-1-2" name="message" id="message1" rows="5" placeholder="Notification message!"></textarea>
- 
-                    <label for="include_image1" class="pure-checkbox">
-                        <input id="include_image1" name="include_image" type="checkbox"> Include image
-                    </label>
-                    <input type="hidden" name="push_type" value="topic"/>
-                    <button type="submit" class="pure-button pure-button-primary btn_send">Send to Topic</button>
+                    <button type="submit" name="submit" class="pure-button pure-button-primary btn_send">Send</button>
                 </fieldset>
             </form>
         </div>
